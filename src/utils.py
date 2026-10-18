@@ -66,11 +66,14 @@ def random_state(vehicles, ship, rng=None):
     ids = list(vehicles)
     rng.shuffle(ids)
 
+    chance: float = 0.5 # ubah kemungkinan dilewat -> gadimasukin ke kapal
+    tries: int = 50 # maks nyoba x kali orientasi & posisi acak
+
     for id in ids:
-        if rng.random() < 0.5:
+        if rng.random() < chance: 
             continue
 
-        for _ in range(50):
+        for _ in range(tries): 
             p = Placement(rotated=rng.choice([False, True]))
             w, l = get_dimensions(vehicles[id], p)
 
@@ -145,9 +148,10 @@ def generate_neighbors(state, vehicles, ship):
 
 
 def random_neighbor(state, vehicles, ship, rng=None):
-    rng = rng if rng is not None else random.Random()
+    if rng is None:
+        rng = random.Random()
     neighbors = generate_neighbors(state, vehicles, ship)
     if neighbors:
         return rng.choice(neighbors)
-    else:
-        return None
+
+    return None
