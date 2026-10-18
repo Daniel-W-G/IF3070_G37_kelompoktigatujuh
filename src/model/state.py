@@ -2,10 +2,10 @@ from .placement import Placement
 
 
 class State:
-    def __init__(self, placements):
-        self.placements = placements
+    def __init__(self, placements: dict[str, Placement]):
+        self.placements: dict[str, Placement] = placements
 
-    def copy(self):
+    def copy(self) -> "State":
         return State({
             vehicle_id: Placement(
                 loaded=p.loaded,
