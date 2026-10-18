@@ -2,13 +2,16 @@ import random
 from .model.state import State
 from .model.placement import Placement
 
+# Note: vehicles adalah dictionary/map, bukan array/list (ID: model.Vehicle(width, length))
+
+
 def get_dimensions(vehicle, placement): # panjang -> lebar, lebar -> panjang
     if placement.rotated:
         return vehicle.length, vehicle.width
     return vehicle.width, vehicle.length
 
 
-def objective(state, vehicles): # ngitung total shipping fee dlm satu state
+def objective(state, vehicles): # ngitung total shipping fee dlm satu state (maximize)
     total = 0
     for id, p in state.placements.items():
         if p.loaded:
@@ -31,6 +34,7 @@ def total_weight(state, vehicles):
 # - Kendaraan yg ga loaded -> 0 harus x dan y nya None
 # - Kendaraan yg loaded -> x dan y hrs int
 # - Letak kendaraan gaboleh
+# note: function random_state dan generate_neighbors udh ada validasi is_valid di dalamnya, jadi ga perlu di luar lagi
 def is_valid(state, vehicles, ship): 
     if state.placements.keys() != vehicles.keys():
         return False
@@ -61,11 +65,11 @@ def is_valid(state, vehicles, ship):
 
 
 def random_state(vehicles, ship, rng=None): 
-    rng = rng if rng is not None else random.Random()
+    if rng is None:
+        rng = random.Random()
     state = State({id: Placement() for id in vehicles})
     ids = list(vehicles)
     rng.shuffle(ids)
-
     chance: float = 0.5 # ubah kemungkinan dilewat -> gadimasukin ke kapal
     tries: int = 50 # maks nyoba x kali orientasi & posisi acak
 
@@ -93,7 +97,7 @@ def random_state(vehicles, ship, rng=None):
     return state
 
 
-def generate_neighbors(state, vehicles, ship):
+def generate_neighbors(state, vehicles, ship): # return array semua neighbor state yg valid dari state sekarang
     neighbors = []
 
     def add_if_valid(candidate):

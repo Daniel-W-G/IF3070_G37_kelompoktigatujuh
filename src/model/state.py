@@ -1,6 +1,5 @@
 from .placement import Placement
 
-
 class State:
     def __init__(self, placements: dict[str, Placement]):
         self.placements: dict[str, Placement] = placements
