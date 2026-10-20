@@ -1,23 +1,23 @@
 import random
 from ..utils import *
 from ..import model
+from time import perf_counter
+import json
+from pathlib import Path
 
 
-def generate_population(size, vehicles, ship, rng=None):
-    if rng is None:
-        rng = random.Random()
+def generate_population(size, vehicles, ship):
     population = []
 
     for _ in range(size):
-        state = random_state(vehicles, ship, rng)
+        state = random_state(vehicles, ship)
         population.append(state)
 
     return population
 
 
-def select_parents(population, vehicles, rng=None):
-    if rng is None:
-        rng = random.Random()
+
+def select_parents(population, vehicles):
 
     if not population:
         raise ValueError("populasi tak boleh kosong")
@@ -25,84 +25,140 @@ def select_parents(population, vehicles, rng=None):
     fitness_scores = [objective(state, vehicles) for state in population]
 
     if sum(fitness_scores) == 0:
-        return rng.choices(population, k=2)
+        return random.choices(population, k=2)
 
-    return rng.choices(population, weights=fitness_scores, k=2)
+    return random.choices(population, weights=fitness_scores, k=2)
 
 
-def crossover(parent1, parent2, vehicles, ship, rng=None):
-    if rng is None:
-        rng = random.Random()
+
+def crossover(parent1, parent2, vehicles, ship):
     chance: float = 0.5
     parent1 = parent1.copy()
     parent2 = parent2.copy()
     child = State({id: Placement() for id in vehicles})
 
     for id in vehicles:
-        if rng.random() < chance:
+        if random.random() < chance:
             child.placements[id] = parent1.placements[id]
         else:
             child.placements[id] = parent2.placements[id]
 
     if not is_valid(child, vehicles, ship):
-        return random_state(vehicles, ship, rng)
+        return random_state(vehicles, ship)
 
     return child
 
 
-def mutate(state, vehicles, ship, mutation_rate=0.1, rng=None):
-    if rng is None:
-        rng = random.Random()
+
+def mutate(state, vehicles, ship, mutation_rate=0.1):
     new_state = state.copy()
 
     for id in vehicles:
-        if rng.random() < mutation_rate:
-            p = Placement(rotated=rng.choice([False, True]))
+        if random.random() < mutation_rate:
+            p = Placement(rotated=random.choice([False, True]))
             w, l = get_dimensions(vehicles[id], p)
 
             if w > ship.width or l > ship.length:
                 continue
 
             p.loaded = True
-            p.x = rng.randint(0, ship.width - w)
-            p.y = rng.randint(0, ship.length - l)
+            p.x = random.randint(0, ship.width - w)
+            p.y = random.randint(0, ship.length - l)
             new_state.placements[id] = p
 
     if not is_valid(new_state, vehicles, ship):
-        return random_state(vehicles, ship, rng)
+        return random_state(vehicles, ship)
 
     return new_state
 
 
 
-def genetic_algorithm(vehicles, ship, state=None, population_size=50, generations=100, mutation_rate=0.1, rng=None):
-    if rng is None:
-        rng = random.Random()
-    if state is not None:
-        population = [state.copy()]
-    else:
-        population = []
-    population.extend(generate_population(population_size-len(population), vehicles, ship, rng))
+def genetic_algorithm(vehicles, ship, population_size, generations, mutation_rate):
+    start_time = perf_counter()
+
+    population = []
+    population.extend(generate_population(population_size-len(population), vehicles, ship))
+
+    initial_population = [s.copy() for s in population]
+    scores = [objective(s, vehicles) for s in population]
+    max_history = [max(scores)]
+    average_history = [sum(scores) / len(scores)]
 
     for _ in range(generations):
         new_population = []
 
         while len(new_population) < population_size:
-            parent1, parent2 = select_parents(population, vehicles, rng)
-            child1 = crossover(parent1, parent2, vehicles, ship, rng)
-            child2 = crossover(parent2, parent1, vehicles, ship, rng)
+            parent1, parent2 = select_parents(population, vehicles)
+            child1 = crossover(parent1, parent2, vehicles, ship)
+            child2 = crossover(parent2, parent1, vehicles, ship)
 
-            child1 = mutate(child1, vehicles, ship, mutation_rate, rng)
-            child2 = mutate(child2, vehicles, ship, mutation_rate, rng)
+            child1 = mutate(child1, vehicles, ship, mutation_rate)
+            child2 = mutate(child2, vehicles, ship, mutation_rate)
 
             new_population.append(child1)
             if len(new_population) < population_size:
                 new_population.append(child2)
 
         population = new_population
+        scores = [objective(s, vehicles) for s in population]
+        max_history.append(max(scores))
+        average_history.append(sum(scores) / len(scores))
 
     best_state = max(population, key=lambda s: objective(s, vehicles))
-    return best_state
+    return {
+    "initial_population": initial_population,
+    "final_population": population,
+    "final_state": best_state,
+    "final_score": objective(best_state, vehicles),
+    "max_history": max_history,
+    "average_history": average_history,
+    "population_size": population_size,
+    "generations": generations,
+    "mutation_rate": mutation_rate,
+    "duration_seconds": perf_counter() - start_time
+}
+
+
+
+def GA_out(vehicles, ship, population_size: int, generations: int, mutation_rate: float):
+    result = genetic_algorithm(vehicles, ship, population_size, generations, mutation_rate)
+
+    def to_dict(state):
+        data = {}
+        for id, p in state.placements.items():
+            data[id] = {
+                "loaded": p.loaded,
+                "x": p.x,
+                "y": p.y,
+                "rotated": p.rotated
+            }
+        return data
+
+    output = {
+        "initial_population": [to_dict(s) for s in result["initial_population"]],
+        "final_population": [to_dict(s) for s in result["final_population"]],
+        "final_state": to_dict(result["final_state"]),
+        "final_score": result["final_score"],
+        "max_history": result["max_history"],
+        "average_history": result["average_history"],
+        "population_size": result["population_size"],
+        "generations": result["generations"],
+        "mutation_rate": result["mutation_rate"],
+        "duration_seconds": result["duration_seconds"]  
+    }
+
+
+
+    output_path = Path(__file__).resolve().parents[2] / "output"
+    output_path.mkdir(parents=True, exist_ok=True)
+    file_path = output_path / "GA_output.json"
+    with file_path.open("w", encoding="utf-8") as file:
+        json.dump(output, file, indent=4)
+
+    return output
+
+
+
 
 
 
@@ -120,24 +176,9 @@ if __name__ == "__main__":
 
     ship = model.Ship(5, 20, 50)
 
-    final_state = genetic_algorithm(
-        vehicles,
-        ship,
-        population_size=50,
-        generations=100,
-        mutation_rate=0.1
-    )
+    population = 100
+    iterations = 50
+    mutation = 0.1
 
-    print("Total shipping fee:", objective(final_state, vehicles))
-    print("Total berat:", total_weight(final_state, vehicles))
-    print("State valid:", is_valid(final_state, vehicles, ship))
+    output = GA_out(vehicles, ship, population, iterations, mutation)
 
-    for vehicle_id, placement in final_state.placements.items():
-        if placement.loaded:
-            print(
-                vehicle_id,
-                "posisi:", (placement.x, placement.y),
-                "rotated:", placement.rotated
-            )
-        else:
-            print(vehicle_id, "tidak dimuat")

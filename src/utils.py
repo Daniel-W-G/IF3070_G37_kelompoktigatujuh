@@ -64,29 +64,27 @@ def is_valid(state, vehicles, ship):
     return True
 
 
-def random_state(vehicles, ship, rng=None): 
-    if rng is None:
-        rng = random.Random()
+def random_state(vehicles, ship): 
     state = State({id: Placement() for id in vehicles})
     ids = list(vehicles)
-    rng.shuffle(ids)
+    random.shuffle(ids)
     chance: float = 0.5 # ubah kemungkinan dilewat -> gadimasukin ke kapal
     tries: int = 50 # maks nyoba x kali orientasi & posisi acak
 
     for id in ids:
-        if rng.random() < chance: 
+        if random.random() < chance: 
             continue
 
         for _ in range(tries): 
-            p = Placement(rotated=rng.choice([False, True]))
+            p = Placement(rotated=random.choice([False, True]))
             w, l = get_dimensions(vehicles[id], p)
 
             if w > ship.width or l > ship.length:
                 continue
 
             p.loaded = True
-            p.x = rng.randint(0, ship.width - w)
-            p.y = rng.randint(0, ship.length - l)
+            p.x = random.randint(0, ship.width - w)
+            p.y = random.randint(0, ship.length - l)
             state.placements[id] = p
 
             if is_valid(state, vehicles, ship):
@@ -151,11 +149,9 @@ def generate_neighbors(state, vehicles, ship): # return array semua neighbor sta
     return neighbors
 
 
-def random_neighbor(state, vehicles, ship, rng=None):
-    if rng is None:
-        rng = random.Random()
+def random_neighbor(state, vehicles, ship):
     neighbors = generate_neighbors(state, vehicles, ship)
     if neighbors:
-        return rng.choice(neighbors)
+        return random.choice(neighbors)
 
     return None
