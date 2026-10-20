@@ -2,20 +2,20 @@ import random
 from .model.state import State
 from .model.placement import Placement
 
-# Note: vehicles adalah dictionary/map, bukan array/list (ID: model.Vehicle(width, length))
 
 
-def get_dimensions(vehicle, placement): # panjang -> lebar, lebar -> panjang
+def get_dimensions(vehicle, placement):
     if placement.rotated:
         return vehicle.length, vehicle.width
     return vehicle.width, vehicle.length
 
 
-def objective(state, vehicles): # ngitung total shipping fee dlm satu state (maximize)
+def objective(state, vehicles): # <---------------------------------------------------------------------------------------------------------------------------- penting
     total = 0
     for id, p in state.placements.items():
         if p.loaded:
             total += vehicles[id].shipping_fee
+            # total += (1/vehicles[id].eta) buat minimize)
 
     return total
 

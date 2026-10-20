@@ -4,6 +4,10 @@ from ..import model
 from time import perf_counter
 import json
 from pathlib import Path
+import matplotlib.pyplot as plt
+from ..visualisasi import plot_state
+from datetime import datetime
+
 
 
 def generate_population(size, vehicles, ship):
@@ -73,18 +77,17 @@ def mutate(state, vehicles, ship, mutation_rate=0.1):
 
 
 
-def genetic_algorithm(vehicles, ship, population_size, generations, mutation_rate):
+def genetic_algorithm(vehicles, ship, population_size, iterations, mutation_rate):
     start_time = perf_counter()
 
-    population = []
-    population.extend(generate_population(population_size-len(population), vehicles, ship))
+    population = generate_population(population_size, vehicles, ship)
 
     initial_population = [s.copy() for s in population]
     scores = [objective(s, vehicles) for s in population]
     max_history = [max(scores)]
     average_history = [sum(scores) / len(scores)]
 
-    for _ in range(generations):
+    for _ in range(iterations):
         new_population = []
 
         while len(new_population) < population_size:
@@ -113,15 +116,15 @@ def genetic_algorithm(vehicles, ship, population_size, generations, mutation_rat
     "max_history": max_history,
     "average_history": average_history,
     "population_size": population_size,
-    "generations": generations,
+    "iterations": iterations,
     "mutation_rate": mutation_rate,
     "duration_seconds": perf_counter() - start_time
 }
 
 
 
-def GA_out(vehicles, ship, population_size: int, generations: int, mutation_rate: float):
-    result = genetic_algorithm(vehicles, ship, population_size, generations, mutation_rate)
+def GA_out(vehicles, ship, population_size: int, iterations: int, mutation_rate: float):
+    result = genetic_algorithm(vehicles, ship, population_size, iterations, mutation_rate)
 
     def to_dict(state):
         data = {}
@@ -142,43 +145,76 @@ def GA_out(vehicles, ship, population_size: int, generations: int, mutation_rate
         "max_history": result["max_history"],
         "average_history": result["average_history"],
         "population_size": result["population_size"],
-        "generations": result["generations"],
+        "iterations": result["iterations"],
         "mutation_rate": result["mutation_rate"],
         "duration_seconds": result["duration_seconds"]  
     }
 
 
 
-    output_path = Path(__file__).resolve().parents[2] / "output"
+    output_path = Path(__file__).resolve().parents[2] / "output" / "GA"
     output_path.mkdir(parents=True, exist_ok=True)
-    file_path = output_path / "GA_output.json"
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+
+    filename = (f"GA_pop{population_size}_gen{iterations}_{timestamp}.json")
+
+    file_path = output_path / filename
     with file_path.open("w", encoding="utf-8") as file:
         json.dump(output, file, indent=4)
 
+
+    initial_state = max(result["initial_population"], key=lambda s: objective(s, vehicles))
+
+    initial_result= plot_state(initial_state, vehicles, ship, "GA - Individu Terbaik Populasi Awal")
+    final_result = plot_state(result["final_state"], vehicles, ship, "GA - Individu Terbaik Generasi Terakhir")
+    history_result = plot_ga_history(result)
+
+    initial_result.savefig(
+        output_path / f"{file_path.stem}_initial.png",
+        dpi=200, bbox_inches="tight"
+    )
+
+    final_result.savefig(
+        output_path / f"{file_path.stem}_final.png",
+        dpi=200, bbox_inches="tight"
+    )
+
+    history_result.savefig(
+        output_path / f"{file_path.stem}_history.png",
+        dpi=200, bbox_inches="tight"
+    )
+
+    plt.close(initial_result)
+    plt.close(final_result)
+    plt.close(history_result)
+
+    #plt.show()
     return output
 
 
 
 
+def plot_ga_history(result):
+    fig, ax = plt.subplots(figsize=(9, 5))
 
+    iterations = range(len(result["max_history"]))
 
-# --------------------------------testing---------------------------------#
+    ax.plot(
+        iterations,
+        result["max_history"],
+        label="Maksimum"
+    )
+    ax.plot(
+        iterations,
+        result["average_history"],
+        label="Rata-rata"
+    )
 
+    ax.set_title("Perkembangan Objective Function GA")
+    ax.set_xlabel("Iterasi")
+    ax.set_ylabel("Total Shipping Fee")
+    ax.grid(True, alpha=0.3)
+    ax.legend()
 
-if __name__ == "__main__":
-    vehicles = {
-        "V1": model.Vehicle("V1", 2, 3, 100, 20, 5),
-        "V2": model.Vehicle("V2", 3, 2, 150, 15, 2),
-        "V3": model.Vehicle("V3", 1, 1, 50, 10, 1),
-        "V4": model.Vehicle("V4", 2, 2, 120, 23, 3),
-        "V5": model.Vehicle("V5", 4, 1, 200, 9, 1),
-    }
-
-    ship = model.Ship(5, 20, 50)
-
-    population = 100
-    iterations = 50
-    mutation = 0.1
-
-    output = GA_out(vehicles, ship, population, iterations, mutation)
-
+    fig.tight_layout()
+    return fig
