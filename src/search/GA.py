@@ -36,43 +36,42 @@ def select_parents(population, vehicles):
 
 
 def crossover(parent1, parent2, vehicles, ship):
-    chance: float = 0.5
+    ids = list(vehicles)
+    if len(ids) < 2:
+        return parent1.copy()
+    cut = random.randint(1, len(ids) - 1)
     parent1 = parent1.copy()
     parent2 = parent2.copy()
     child = State({id: Placement() for id in vehicles})
-
-    for id in vehicles:
-        if random.random() < chance:
+    for index, id in enumerate(ids):
+        if index < cut:
             child.placements[id] = parent1.placements[id]
         else:
             child.placements[id] = parent2.placements[id]
-
     if not is_valid(child, vehicles, ship):
         return random_state(vehicles, ship)
-
     return child
-
 
 
 def mutate(state, vehicles, ship, mutation_rate=0.1):
     new_state = state.copy()
-
-    for id in vehicles:
-        if random.random() < mutation_rate:
-            p = Placement(rotated=random.choice([False, True]))
-            w, l = get_dimensions(vehicles[id], p)
-
-            if w > ship.width or l > ship.length:
-                continue
-
-            p.loaded = True
-            p.x = random.randint(0, ship.width - w)
-            p.y = random.randint(0, ship.length - l)
-            new_state.placements[id] = p
-
+    if random.random() >= mutation_rate:
+        return new_state
+    if not vehicles:
+        return new_state
+    id = random.choice(list(vehicles))
+    p = Placement(
+        loaded=True,
+        rotated=random.choice([False, True])
+    )
+    w, l = get_dimensions(vehicles[id], p)
+    if w > ship.width or l > ship.length:
+        return new_state
+    p.x = random.randint(0, ship.width - w)
+    p.y = random.randint(0, ship.length - l)
+    new_state.placements[id] = p
     if not is_valid(new_state, vehicles, ship):
-        return random_state(vehicles, ship)
-
+        return state.copy()
     return new_state
 
 
