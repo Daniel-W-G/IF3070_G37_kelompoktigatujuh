@@ -2,17 +2,20 @@ import random
 from .model.state import State
 from .model.placement import Placement
 
-def get_dimensions(vehicle, placement): # panjang -> lebar, lebar -> panjang
+
+
+def get_dimensions(vehicle, placement):
     if placement.rotated:
         return vehicle.length, vehicle.width
     return vehicle.width, vehicle.length
 
 
-def objective(state, vehicles): # ngitung total shipping fee dlm satu state
+def objective(state, vehicles): # <---------------------------------------------------------------------------------------------------------------------------- penting
     total = 0
     for id, p in state.placements.items():
         if p.loaded:
             total += vehicles[id].shipping_fee
+            # total += (1/vehicles[id].eta) buat minimize)
 
     return total
 
@@ -31,6 +34,7 @@ def total_weight(state, vehicles):
 # - Kendaraan yg ga loaded -> 0 harus x dan y nya None
 # - Kendaraan yg loaded -> x dan y hrs int
 # - Letak kendaraan gaboleh
+# note: function random_state dan generate_neighbors udh ada validasi is_valid di dalamnya, jadi ga perlu di luar lagi
 def is_valid(state, vehicles, ship): 
     if state.placements.keys() != vehicles.keys():
         return False
@@ -60,29 +64,27 @@ def is_valid(state, vehicles, ship):
     return True
 
 
-def random_state(vehicles, ship, rng=None): 
-    rng = rng if rng is not None else random.Random()
+def random_state(vehicles, ship): 
     state = State({id: Placement() for id in vehicles})
     ids = list(vehicles)
-    rng.shuffle(ids)
-
+    random.shuffle(ids)
     chance: float = 0.5 # ubah kemungkinan dilewat -> gadimasukin ke kapal
     tries: int = 50 # maks nyoba x kali orientasi & posisi acak
 
     for id in ids:
-        if rng.random() < chance: 
+        if random.random() < chance: 
             continue
 
         for _ in range(tries): 
-            p = Placement(rotated=rng.choice([False, True]))
+            p = Placement(rotated=random.choice([False, True]))
             w, l = get_dimensions(vehicles[id], p)
 
             if w > ship.width or l > ship.length:
                 continue
 
             p.loaded = True
-            p.x = rng.randint(0, ship.width - w)
-            p.y = rng.randint(0, ship.length - l)
+            p.x = random.randint(0, ship.width - w)
+            p.y = random.randint(0, ship.length - l)
             state.placements[id] = p
 
             if is_valid(state, vehicles, ship):
@@ -93,7 +95,7 @@ def random_state(vehicles, ship, rng=None):
     return state
 
 
-def generate_neighbors(state, vehicles, ship):
+def generate_neighbors(state, vehicles, ship): # return array semua neighbor state yg valid dari state sekarang
     neighbors = []
 
     def add_if_valid(candidate):
@@ -147,11 +149,9 @@ def generate_neighbors(state, vehicles, ship):
     return neighbors
 
 
-def random_neighbor(state, vehicles, ship, rng=None):
-    if rng is None:
-        rng = random.Random()
+def random_neighbor(state, vehicles, ship):
     neighbors = generate_neighbors(state, vehicles, ship)
     if neighbors:
-        return rng.choice(neighbors)
+        return random.choice(neighbors)
 
     return None
