@@ -51,19 +51,19 @@ population_p3 = 500
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("algorithm", choices=["ga", "hc", "sa", "all"])
+    parser.add_argument("algorithm", nargs="?", choices=["ga", "hc", "sa", "all"], default="all")
     args = parser.parse_args()
 
     def run_ga():
-        output_GA_control= GA_out(vehicles, ship, population, iteration, mutation)
+        GA_out(vehicles, ship, population, iteration, mutation)
         for i in range(3):
-            output_GA_I1= GA_out(vehicles, ship, population, iteration_i1, mutation)
-            output_GA_I2= GA_out(vehicles, ship, population, iteration_i2, mutation)
-            output_GA_I3= GA_out(vehicles, ship, population, iteration_i3, mutation)
+            GA_out(vehicles, ship, population, iteration_i1, mutation)
+            GA_out(vehicles, ship, population, iteration_i2, mutation)
+            GA_out(vehicles, ship, population, iteration_i3, mutation)
 
-            output_GA_P1= GA_out(vehicles, ship, population_p1, iteration, mutation)
-            output_GA_P2= GA_out(vehicles, ship, population_p2, iteration, mutation)
-            output_GA_P3= GA_out(vehicles, ship, population_p3, iteration, mutation)
+            GA_out(vehicles, ship, population_p1, iteration, mutation)
+            GA_out(vehicles, ship, population_p2, iteration, mutation)
+            GA_out(vehicles, ship, population_p3, iteration, mutation)
         return
 
 
