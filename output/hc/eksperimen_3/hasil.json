@@ -1,0 +1,139 @@
+{
+    "seed": 3,
+    "algorithm": "Steepest Ascent Hill-climbing",
+    "initial_score": 1050,
+    "final_score": 1100,
+    "iterations": 2,
+    "accepted_moves": 1,
+    "duration_seconds": 0.00903660000039963,
+    "stop_reason": "Tidak ada tetangga dengan nilai lebih tinggi.",
+    "history": [
+        1050,
+        1100,
+        1100
+    ],
+    "initial_state": {
+        "V1": {
+            "loaded": false,
+            "x": null,
+            "y": null,
+            "rotated": false
+        },
+        "V2": {
+            "loaded": true,
+            "x": 0,
+            "y": 7,
+            "rotated": false
+        },
+        "V3": {
+            "loaded": true,
+            "x": 3,
+            "y": 10,
+            "rotated": false
+        },
+        "V4": {
+            "loaded": true,
+            "x": 3,
+            "y": 11,
+            "rotated": false
+        },
+        "V5": {
+            "loaded": false,
+            "x": null,
+            "y": null,
+            "rotated": false
+        },
+        "V6": {
+            "loaded": false,
+            "x": null,
+            "y": null,
+            "rotated": false
+        },
+        "V7": {
+            "loaded": false,
+            "x": null,
+            "y": null,
+            "rotated": false
+        },
+        "V8": {
+            "loaded": false,
+            "x": null,
+            "y": null,
+            "rotated": false
+        },
+        "V9": {
+            "loaded": true,
+            "x": 3,
+            "y": 0,
+            "rotated": false
+        },
+        "V10": {
+            "loaded": true,
+            "x": 0,
+            "y": 0,
+            "rotated": true
+        }
+    },
+    "final_state": {
+        "V1": {
+            "loaded": true,
+            "x": 3,
+            "y": 0,
+            "rotated": false
+        },
+        "V2": {
+            "loaded": true,
+            "x": 0,
+            "y": 7,
+            "rotated": false
+        },
+        "V3": {
+            "loaded": true,
+            "x": 3,
+            "y": 10,
+            "rotated": false
+        },
+        "V4": {
+            "loaded": true,
+            "x": 3,
+            "y": 11,
+            "rotated": false
+        },
+        "V5": {
+            "loaded": false,
+            "x": null,
+            "y": null,
+            "rotated": false
+        },
+        "V6": {
+            "loaded": false,
+            "x": null,
+            "y": null,
+            "rotated": false
+        },
+        "V7": {
+            "loaded": false,
+            "x": null,
+            "y": null,
+            "rotated": false
+        },
+        "V8": {
+            "loaded": false,
+            "x": null,
+            "y": null,
+            "rotated": false
+        },
+        "V9": {
+            "loaded": false,
+            "x": null,
+            "y": null,
+            "rotated": false
+        },
+        "V10": {
+            "loaded": true,
+            "x": 0,
+            "y": 0,
+            "rotated": true
+        }
+    }
+}
