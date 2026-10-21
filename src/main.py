@@ -35,14 +35,14 @@ iteration = 100
 mutation = 0.1
 
 # iteration change
-iteration_i1 = 50
-iteration_i2 = 200
-iteration_i3 = 500
+iteration_i1 = 10
+iteration_i2 = 50
+iteration_i3 = 200
 
 # population change
-population_p1 = 50
-population_p2 = 200
-population_p3 = 500
+population_p1 = 10
+population_p2 = 50
+population_p3 = 200
 
 
 
@@ -56,6 +56,8 @@ if __name__ == "__main__":
 
     def run_ga():
         for i in range(3):
+            GA_out(vehicles, ship, population, iteration, mutation)
+
             GA_out(vehicles, ship, population, iteration_i1, mutation)
             GA_out(vehicles, ship, population, iteration_i2, mutation)
             GA_out(vehicles, ship, population, iteration_i3, mutation)
