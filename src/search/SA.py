@@ -4,7 +4,6 @@ from ..utils import *
 from time import perf_counter
 
 
-
 # T geometrik: T <- alpha * T. berhenti kalo T < T_min (anggap T ~ 0) atau iterasi selesai
 def simulated_annealing(vehicles, ship, T0, alpha, T_min, max_iter, seed):
     if T0 <= 0 or T_min <= 0 or not 0 < alpha <= 1:
@@ -19,7 +18,10 @@ def simulated_annealing(vehicles, ship, T0, alpha, T_min, max_iter, seed):
 
     value_history = [current_value]
     temperature_history = []
-    probability_history = []  # e^(dE/T), None kalau neighbor lebih baik
+    probability_history = []  # e^(dE/T), None kalo neighbor lebih baik
+    worse_considered = 0
+    worse_accepted = 0
+    stuck_count = 0  # hitung neighbor lebih buruk yang ditolak
     iterations = 0
     T = T0
 
@@ -38,8 +40,14 @@ def simulated_annealing(vehicles, ship, T0, alpha, T_min, max_iter, seed):
             else:
                 probability = math.exp(delta / T)
                 probability_history[-1] = probability
+                if delta < 0:
+                    worse_considered += 1
                 if probability > random.random():
                     current, current_value = neighbor, current_value + delta
+                    if delta < 0:
+                        worse_accepted += 1
+                elif delta < 0:
+                    stuck_count += 1
 
         value_history.append(current_value)
         T *= alpha
@@ -51,6 +59,9 @@ def simulated_annealing(vehicles, ship, T0, alpha, T_min, max_iter, seed):
         "value_history": value_history,
         "temperature_history": temperature_history,
         "probability_history": probability_history,
+        "stuck_count": stuck_count,
+        "worse_considered": worse_considered,
+        "worse_accepted": worse_accepted,
         "iterations": iterations,
         "duration_seconds": perf_counter() - start_time,
         "seed": seed,
