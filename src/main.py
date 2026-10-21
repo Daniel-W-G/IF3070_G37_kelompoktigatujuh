@@ -1,6 +1,13 @@
 from .search.GA import GA_out
+from .search.HC import hill_climbing
 from .import model
 import argparse
+import matplotlib.pyplot as plt
+from .visualisasi import plot_state
+from pathlib import Path
+from datetime import datetime
+import json
+import random
 
 
 
@@ -57,6 +64,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("algorithm", nargs="?", choices=["ga", "hc", "sa", "all"], default="all")
+    parser.add_argument("--seed", type=int, default=None, help="Seed untuk mengulang pembentukan state awal Hill-climbing.")
     args = parser.parse_args()
 
     def run_ga():
@@ -72,8 +80,87 @@ if __name__ == "__main__":
         return
 
 
+    def run_hc():
+        if args.seed is not None:
+            random.seed(args.seed)
+        result = hill_climbing(vehicles, ship)
+
+        print("Algoritma: Steepest Ascent Hill-climbing")
+        print(f"Nilai awal: {result['initial_score']}")
+        print(f"Nilai akhir: {result['final_score']}")
+        print(f"Jumlah perpindahan: {result['iterations']}")
+        print(f"Durasi: {result['duration_seconds']:.6f} detik")
+        print(f"Alasan berhenti: {result['stop_reason']}")
+        print(f"Riwayat nilai: {result['history']}")
+        initial_fig = plot_state(
+            result["initial_state"], vehicles, ship,
+            "State Awal - Steepest Ascent Hill-climbing"
+        )
+        final_fig = plot_state(
+            result["final_state"], vehicles, ship,
+            "State Akhir - Steepest Ascent Hill-climbing"
+        )
+        fig, ax = plt.subplots(figsize=(8,5))
+        steps = range(len(result["history"]))
+
+        ax.plot(steps, result["history"], marker="o")
+        ax.set_xticks(list(steps))
+        ax.set_xlabel("Iterasi (0 = state awal)")
+        ax.set_ylabel("Total Shipping Fee")
+        ax.set_title("Perkembangan Nilai Objektif — Hill-climbing")
+        ax.grid(True, alpha=0.3)
+        fig.tight_layout()
+        run_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        project_root = Path(__file__).resolve().parent.parent
+        output_dir = project_root / "output" / "hc" / run_id
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        initial_fig.savefig(
+            output_dir / "state_awal.png", dpi=150, bbox_inches="tight"
+        )
+        final_fig.savefig(
+            output_dir / "state_akhir.png", dpi=150, bbox_inches="tight"
+        )
+        fig.savefig(
+            output_dir / "grafik_objektif.png", dpi=150, bbox_inches="tight"
+        )
+
+        print(f"Gambar tersimpan di: {output_dir}")
+
+        summary = {
+
+            "seed": args.seed,
+            "algorithm": "Steepest Ascent Hill-climbing",
+            "initial_score": result["initial_score"],
+            "final_score": result["final_score"],
+            "accepted_moves": result["iterations"],
+            "duration_seconds": result["duration_seconds"],
+            "stop_reason": result["stop_reason"],
+            "history": result["history"],
+        }
+
+        for state_key in ("initial_state", "final_state"):
+            summary[state_key] = {
+                vehicle_id: {
+                    "loaded": placement.loaded,
+                    "x": placement.x,
+                    "y": placement.y,
+                    "rotated": placement.rotated,
+                }
+                for vehicle_id, placement
+                in result[state_key].placements.items()
+            }
+
+        with (output_dir / "hasil.json").open(
+            "w", encoding="utf-8"
+        ) as file:
+            json.dump(summary, file, indent=4, ensure_ascii=False)
+
+
+        plt.show()
+
     if args.algorithm == "hc":
-        pass
+        run_hc()
 
     elif args.algorithm == "sa":
         pass
@@ -82,5 +169,5 @@ if __name__ == "__main__":
         run_ga()
 
     elif args.algorithm == "all":
-        
+        run_hc()
         run_ga()
