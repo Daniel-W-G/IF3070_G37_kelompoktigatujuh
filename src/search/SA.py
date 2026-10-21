@@ -2,6 +2,11 @@ import math
 import random
 from ..utils import *
 from time import perf_counter
+import json
+from pathlib import Path
+import matplotlib.pyplot as plt
+from ..visualisasi import plot_state
+from datetime import datetime
 
 
 # T geometrik: T <- alpha * T. berhenti kalo T < T_min (anggap T ~ 0) atau iterasi selesai
@@ -46,7 +51,7 @@ def simulated_annealing(vehicles, ship, T0, alpha, T_min, max_iter, seed):
                     current, current_value = neighbor, current_value + delta
                     if delta < 0:
                         worse_accepted += 1
-                elif delta < 0:
+                else:
                     stuck_count += 1
 
         value_history.append(current_value)
@@ -54,7 +59,7 @@ def simulated_annealing(vehicles, ship, T0, alpha, T_min, max_iter, seed):
 
     return {
         "initial_state": initial_state,
-        "final_state": current,
+        "final_state": current, # mengembalikan state saat berhenti, bukan best-so-far
         "final_score": current_value,
         "value_history": value_history,
         "temperature_history": temperature_history,
@@ -70,3 +75,65 @@ def simulated_annealing(vehicles, ship, T0, alpha, T_min, max_iter, seed):
         "T_min": T_min,
         "max_iter": max_iter
     }
+
+
+
+def SA_out(vehicles, ship, T0: float, alpha: float, T_min: float, max_iter: int, seed: int):
+    result = simulated_annealing(vehicles, ship, T0, alpha, T_min, max_iter, seed)
+    def to_dict(state):
+        data = {}
+        for id, p in state.placements.items():
+            data[id] = {
+                "loaded": p.loaded,
+                "x": p.x,
+                "y": p.y,
+                "rotated": p.rotated
+            }
+        return data
+
+    output = {
+        "initial_state": to_dict(result["initial_state"]),
+        "final_state": to_dict(result["final_state"]),
+        "initial_score": result["value_history"][0],
+        "final_score": result["final_score"],
+        "value_history": result["value_history"],
+        "temperature_history": result["temperature_history"],
+        "probability_history": result["probability_history"],
+        "stuck_count": result["stuck_count"],
+        "worse_considered": result["worse_considered"],
+        "worse_accepted": result["worse_accepted"],
+        "iterations": result["iterations"],
+        "duration_seconds": result["duration_seconds"],
+        "seed": result["seed"],
+        "T0": result["T0"],
+        "alpha": result["alpha"],
+        "T_min": result["T_min"],
+        "max_iter": result["max_iter"]
+    }
+
+
+    output_path = Path(__file__).resolve().parents[2] / "output" / "SA"
+    output_path.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    filename = (f"SA_seed{seed}_iter{max_iter}_{timestamp}.json")
+    file_path = output_path / filename
+    with file_path.open("w", encoding="utf-8") as file:
+        json.dump(output, file, indent=4)
+
+
+    initial_result = plot_state(result["initial_state"], vehicles, ship, "SA - State Awal")
+    final_result = plot_state(result["final_state"], vehicles, ship, "SA - State Akhir")
+
+    initial_result.savefig(
+        output_path / f"{file_path.stem}_initial.png",
+        dpi=200, bbox_inches="tight"
+    )
+    final_result.savefig(
+        output_path / f"{file_path.stem}_final.png",
+        dpi=200, bbox_inches="tight"
+    )
+
+    plt.close(initial_result)
+    plt.close(final_result)
+
+    return output
