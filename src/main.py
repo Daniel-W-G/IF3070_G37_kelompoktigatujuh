@@ -88,7 +88,8 @@ if __name__ == "__main__":
         print("Algoritma: Steepest Ascent Hill-climbing")
         print(f"Nilai awal: {result['initial_score']}")
         print(f"Nilai akhir: {result['final_score']}")
-        print(f"Jumlah perpindahan: {result['iterations']}")
+        print(f"Jumlah iterasi pemeriksaan: {result['iterations']}")
+        print(f"Jumlah perpindahan: {result['accepted_moves']}")
         print(f"Durasi: {result['duration_seconds']:.6f} detik")
         print(f"Alasan berhenti: {result['stop_reason']}")
         print(f"Riwayat nilai: {result['history']}")
@@ -105,7 +106,7 @@ if __name__ == "__main__":
 
         ax.plot(steps, result["history"], marker="o")
         ax.set_xticks(list(steps))
-        ax.set_xlabel("Iterasi (0 = state awal)")
+        ax.set_xlabel("Iterasi pemeriksaan (0 = state awal)")
         ax.set_ylabel("Total Shipping Fee")
         ax.set_title("Perkembangan Nilai Objektif — Hill-climbing")
         ax.grid(True, alpha=0.3)
@@ -133,7 +134,8 @@ if __name__ == "__main__":
             "algorithm": "Steepest Ascent Hill-climbing",
             "initial_score": result["initial_score"],
             "final_score": result["final_score"],
-            "accepted_moves": result["iterations"],
+            "iterations": result["iterations"],
+            "accepted_moves": result["accepted_moves"],
             "duration_seconds": result["duration_seconds"],
             "stop_reason": result["stop_reason"],
             "history": result["history"],
