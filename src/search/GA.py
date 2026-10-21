@@ -118,7 +118,6 @@ def genetic_algorithm(vehicles, ship, population_size, iterations, mutation_rate
 
 
 def GA_out(vehicles, ship, population_size: int, iterations: int, mutation_rate: float):
-    result = genetic_algorithm(vehicles, ship, population_size, iterations, mutation_rate)
     def to_dict(state):
         data = {}
         for id, p in state.placements.items():
@@ -130,77 +129,74 @@ def GA_out(vehicles, ship, population_size: int, iterations: int, mutation_rate:
             }
         return data
 
-    output = {
-        "initial_population": [to_dict(s) for s in result["initial_population"]],
-        "final_population": [to_dict(s) for s in result["final_population"]],
-        "final_state": to_dict(result["final_state"]),
-        "final_score": result["final_score"],
-        "max_history": result["max_history"],
-        "average_history": result["average_history"],
-        "population_size": result["population_size"],
-        "iterations": result["iterations"],
-        "mutation_rate": result["mutation_rate"],
-        "duration_seconds": result["duration_seconds"]  
-    }
-
-
-
+    outputs = []
     output_path = Path(__file__).resolve().parents[2] / "output" / "GA"
     output_path.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-    filename = (f"GA_pop{population_size}_gen{iterations}_{timestamp}.json")
-    file_path = output_path / filename
-    with file_path.open("w", encoding="utf-8") as file:
-        json.dump(output, file, indent=4)
+    base_name = f"GA_pop{population_size}_gen{iterations}_{timestamp}"
 
+    for i in range(3):
+        result = genetic_algorithm(
+            vehicles, ship, population_size, iterations, mutation_rate
+        )
+        output = {
+            "initial_population": [to_dict(s) for s in result["initial_population"]],
+            "final_population": [to_dict(s) for s in result["final_population"]],
+            "final_state": to_dict(result["final_state"]),
+            "final_score": result["final_score"],
+            "max_history": result["max_history"],
+            "average_history": result["average_history"],
+            "population_size": result["population_size"],
+            "iterations": result["iterations"],
+            "mutation_rate": result["mutation_rate"],
+            "duration_seconds": result["duration_seconds"]
+        }
+        outputs.append(output)
+        run_name = f"{base_name}_run{i + 1}"
+        file_path = output_path / f"{run_name}.json"
+        with file_path.open("w", encoding="utf-8") as file:
+            json.dump(output, file, indent=4)
+        initial_state = max(result["initial_population"], key=lambda s: objective(s, vehicles))
+        initial_result = plot_state(initial_state, vehicles, ship, f"GA Run {i + 1} - State Terbaik | Populasi Awal \n Populasi: {population_size} | Generasi: {iterations}")
+        final_result = plot_state(result["final_state"], vehicles, ship, f"GA Run {i + 1} - State Terbaik | Generasi Terakhir \n Populasi: {population_size} | Generasi: {iterations}")
+        initial_result.savefig(output_path / f"{run_name}_initial.png", dpi=200, bbox_inches="tight")
+        final_result.savefig(output_path / f"{run_name}_final.png", dpi=200, bbox_inches="tight")
+        plt.close(initial_result)
+        plt.close(final_result)
 
-    initial_state = max(result["initial_population"], key=lambda s: objective(s, vehicles))
-    initial_result= plot_state(initial_state, vehicles, ship, "GA - Individu Terbaik Populasi Awal")
-    final_result = plot_state(result["final_state"], vehicles, ship, "GA - Individu Terbaik Generasi Terakhir")
-    history_result = plot_ga_history(result)
-
-    initial_result.savefig(
-        output_path / f"{file_path.stem}_initial.png",
-        dpi=200, bbox_inches="tight"
-    )
-    final_result.savefig(
-        output_path / f"{file_path.stem}_final.png",
-        dpi=200, bbox_inches="tight"
-    )
+    history_result = plot_ga_history(outputs)
     history_result.savefig(
-        output_path / f"{file_path.stem}_history.png",
+        output_path / f"{base_name}_history.png",
         dpi=200, bbox_inches="tight"
     )
 
-    plt.close(initial_result)
-    plt.close(final_result)
     plt.close(history_result)
-
-    #plt.show()
-    return output
+    return outputs
 
 
 
+def plot_ga_history(results):
+    fig, ax = plt.subplots(figsize=(10, 6))
 
-def plot_ga_history(result):
-    fig, ax = plt.subplots(figsize=(9, 5))
-    iterations = range(len(result["max_history"]))
+    for index, result in enumerate(results):
+        iterations = range(len(result["max_history"]))
+        line, = ax.plot(
+            iterations,
+            result["max_history"],
+            label=f"Run {index + 1} maksimum"
+        )
+        ax.plot(
+            iterations,
+            result["average_history"],
+            color=line.get_color(),
+            linestyle="--",
+            label=f"Run {index + 1} rata-rata"
+        )
 
-    ax.plot(
-        iterations,
-        result["max_history"],
-        label="Maksimum"
-    )
-    ax.plot(
-        iterations,
-        result["average_history"],
-        label="Rata-rata"
-    )
-
-    ax.set_title("Perkembangan Objective Function GA")
+    ax.set_title(f"Perkembangan Objective Function GA | Populasi: {results[0]['population_size']} | Generasi: {results[0]['iterations']}")
     ax.set_xlabel("Iterasi")
     ax.set_ylabel("Total Shipping Fee")
     ax.grid(True, alpha=0.3)
-    ax.legend()
+    ax.legend(ncol=2)
     fig.tight_layout()
     return fig
