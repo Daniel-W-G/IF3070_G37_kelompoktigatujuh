@@ -28,12 +28,12 @@ ship = model.Ship(3, 5, 50)
 
 
 # khusus SA
- 
+
 sa_T0 = 500             # temperatur awal
 sa_alpha = 0.995        # T <- alpha * T tiap iterasi
 sa_T_min = 1.0          # T < T_min dianggap T ~ 0 -> berhenti
-sa_max_iter = 3000      # batas iterasi
-sa_seeds = [1, 2, 3]    # 3 run dengan seed berbeda
+sa_max_iter = 3000      # limit iterasi
+sa_seeds = [1, 2, 3]  
 
 # khusus GA
 
