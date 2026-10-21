@@ -92,4 +92,5 @@ if __name__ == "__main__":
 
     elif args.algorithm == "all":
         
+        run_sa()
         run_ga()
