@@ -55,7 +55,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     def run_ga():
-        GA_out(vehicles, ship, population, iteration, mutation)
         for i in range(3):
             GA_out(vehicles, ship, population, iteration_i1, mutation)
             GA_out(vehicles, ship, population, iteration_i2, mutation)
