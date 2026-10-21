@@ -1,3 +1,4 @@
+from .search.SA import SA_out
 from .search.GA import GA_out
 from .import model
 import argparse
@@ -26,6 +27,13 @@ ship = model.Ship(3, 5, 50)
 
 
 
+# khusus SA
+ 
+sa_T0 = 500             # temperatur awal
+sa_alpha = 0.995        # T <- alpha * T tiap iterasi
+sa_T_min = 1.0          # T < T_min dianggap T ~ 0 -> berhenti
+sa_max_iter = 3000      # batas iterasi
+sa_seeds = [1, 2, 3]    # 3 run dengan seed berbeda
 
 # khusus GA
 
@@ -66,12 +74,18 @@ if __name__ == "__main__":
             GA_out(vehicles, ship, population_p3, iteration, mutation)
         return
 
+    def run_sa():
+        for seed in sa_seeds:
+            out = SA_out(vehicles, ship, sa_T0, sa_alpha, sa_T_min, sa_max_iter, seed)
+            print(f"SA seed={seed} final={out['final_score']} iter={out['iterations']} "
+                  f"stuck={out['stuck_count']} durasi={out['duration_seconds']:.2f}s")
+        return
 
     if args.algorithm == "hc":
         pass
 
     elif args.algorithm == "sa":
-        pass
+        run_sa()
 
     elif args.algorithm == "ga":
         run_ga()

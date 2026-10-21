@@ -77,7 +77,6 @@ def simulated_annealing(vehicles, ship, T0, alpha, T_min, max_iter, seed):
     }
 
 
-
 def SA_out(vehicles, ship, T0: float, alpha: float, T_min: float, max_iter: int, seed: int):
     result = simulated_annealing(vehicles, ship, T0, alpha, T_min, max_iter, seed)
     def to_dict(state):
@@ -123,6 +122,8 @@ def SA_out(vehicles, ship, T0: float, alpha: float, T_min: float, max_iter: int,
 
     initial_result = plot_state(result["initial_state"], vehicles, ship, "SA - State Awal")
     final_result = plot_state(result["final_state"], vehicles, ship, "SA - State Akhir")
+    value_result = plot_sa_value(result)
+    probability_result = plot_sa_probability(result)
 
     initial_result.savefig(
         output_path / f"{file_path.stem}_initial.png",
@@ -132,8 +133,60 @@ def SA_out(vehicles, ship, T0: float, alpha: float, T_min: float, max_iter: int,
         output_path / f"{file_path.stem}_final.png",
         dpi=200, bbox_inches="tight"
     )
+    value_result.savefig(
+        output_path / f"{file_path.stem}_value.png",
+        dpi=200, bbox_inches="tight"
+    )
+    probability_result.savefig(
+        output_path / f"{file_path.stem}_probability.png",
+        dpi=200, bbox_inches="tight"
+    )
 
     plt.close(initial_result)
     plt.close(final_result)
+    plt.close(value_result)
+    plt.close(probability_result)
 
     return output
+
+
+def plot_sa_value(result):
+    fig, ax = plt.subplots(figsize=(9, 5))
+    iterations = range(len(result["value_history"]))
+
+    ax.plot(
+        iterations,
+        result["value_history"],
+        label="Nilai state saat ini"
+    )
+
+    ax.set_title("Perkembangan Objective Function SA")
+    ax.set_xlabel("Iterasi")
+    ax.set_ylabel("Total Shipping Fee")
+    ax.grid(True, alpha=0.3)
+    ax.legend()
+    fig.tight_layout()
+    return fig
+
+
+
+def plot_sa_probability(result):
+    points = [(i, p) for i, p in enumerate(result["probability_history"], start=1) if p is not None]
+    fig, ax = plt.subplots(figsize=(9, 5))
+
+    ax.scatter(
+        [i for i, _ in points],
+        [p for _, p in points],
+        s=4,
+        alpha=0.5,
+        label="e^(ΔE/T)"
+    )
+
+    ax.set_title("Peluang Menerima Langkah Tidak Lebih Baik SA")
+    ax.set_xlabel("Iterasi")
+    ax.set_ylabel("e^(ΔE/T)")
+    ax.set_ylim(-0.02, 1.02)
+    ax.grid(True, alpha=0.3)
+    ax.legend()
+    fig.tight_layout()
+    return fig
