@@ -4,7 +4,7 @@ from ..utils import random_state, generate_neighbors, objective, is_valid
 
 
 def hill_climbing(vehicles, ship, initial_state=None):
-    """Steepest ascent dengan pencatatan setiap putaran pemeriksaan."""
+    """Steepest ascent: tetangga dengan nilai lebih tinggi. Pencatatan setiap putaran pemeriksaan."""
     started = perf_counter()
 
     if initial_state is None:

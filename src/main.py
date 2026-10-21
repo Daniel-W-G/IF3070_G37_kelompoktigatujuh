@@ -93,6 +93,7 @@ if __name__ == "__main__":
         print(f"Durasi: {result['duration_seconds']:.6f} detik")
         print(f"Alasan berhenti: {result['stop_reason']}")
         print(f"Riwayat nilai: {result['history']}")
+
         initial_fig = plot_state(
             result["initial_state"], vehicles, ship,
             "State Awal - Steepest Ascent Hill-climbing"
@@ -108,9 +109,10 @@ if __name__ == "__main__":
         ax.set_xticks(list(steps))
         ax.set_xlabel("Iterasi pemeriksaan (0 = state awal)")
         ax.set_ylabel("Total Shipping Fee")
-        ax.set_title("Perkembangan Nilai Objektif — Hill-climbing")
+        ax.set_title("Perkembangan Nilai Objektif - Hill-climbing")
         ax.grid(True, alpha=0.3)
         fig.tight_layout()
+
         run_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         project_root = Path(__file__).resolve().parent.parent
         output_dir = project_root / "output" / "hc" / run_id
