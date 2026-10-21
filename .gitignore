@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 output/**
 !output/.gitkeep
+.venv/
+__pycache__/
+*.pyc
