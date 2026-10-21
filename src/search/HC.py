@@ -4,7 +4,7 @@ from ..utils import random_state, generate_neighbors, objective, is_valid
 
 
 def hill_climbing(vehicles, ship, initial_state=None):
-    """Steepest ascent: hanya menerima tetangga dengan nilai lebih tinggi."""
+    """Steepest ascent dengan pencatatan setiap putaran pemeriksaan."""
     started = perf_counter()
 
     if initial_state is None:
@@ -19,10 +19,14 @@ def hill_climbing(vehicles, ship, initial_state=None):
     current_score = objective(current, vehicles)
     history = [current_score]
     iterations = 0
+    accepted_moves = 0
 
     while True:
+        iterations += 1
         neighbors = generate_neighbors(current, vehicles, ship)
+
         if not neighbors:
+            history.append(current_score)
             stop_reason = "Tidak ada tetangga valid."
             break
 
@@ -30,12 +34,13 @@ def hill_climbing(vehicles, ship, initial_state=None):
         best_score = objective(best, vehicles)
 
         if best_score <= current_score:
+            history.append(current_score)
             stop_reason = "Tidak ada tetangga dengan nilai lebih tinggi."
             break
 
         current = best
         current_score = best_score
-        iterations += 1
+        accepted_moves += 1
         history.append(current_score)
 
     return {
@@ -45,6 +50,7 @@ def hill_climbing(vehicles, ship, initial_state=None):
         "final_score": current_score,
         "history": history,
         "iterations": iterations,
+        "accepted_moves": accepted_moves,
         "duration_seconds": perf_counter() - started,
         "stop_reason": stop_reason,
     }
