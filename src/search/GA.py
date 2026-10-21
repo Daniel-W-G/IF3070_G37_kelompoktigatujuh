@@ -42,7 +42,7 @@ def crossover(parent1, parent2, vehicles, ship):
         else:
             child.placements[id] = parent2.placements[id]
     if not is_valid(child, vehicles, ship):
-        return random_state(vehicles, ship)
+        return random.choice([parent1, parent2]).copy()
     return child
 
 
