@@ -5,7 +5,7 @@
     "final_score": 1050,
     "iterations": 2,
     "accepted_moves": 1,
-    "duration_seconds": 0.01760430000285851,
+    "duration_seconds": 0.01006490000145277,
     "stop_reason": "Tidak ada tetangga dengan nilai lebih tinggi.",
     "history": [
         850,
