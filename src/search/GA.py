@@ -11,7 +11,7 @@ from datetime import datetime
 
 def generate_population(size, vehicles, ship):
     population = []
-    for _ in range(size):
+    for i in range(size):
         state = random_state(vehicles, ship)
         population.append(state)
     return population
