@@ -58,15 +58,12 @@ population_p2 = 50
 population_p3 = 200
 
 
-
 # khusus SA
-
 sa_T0 = 800
 sa_alpha = 0.998
 sa_T_min = 1.0
 sa_max_iter = 5000
 sa_seeds = [1, 2, 3]
-
 
 
 # Main ----------------------------------------------------------------------------------------------------------------------#
@@ -174,13 +171,13 @@ if __name__ == "__main__":
 
         plt.show()
 
+
     def run_sa():
         for seed in sa_seeds:
             out = SA_out(vehicles, ship, sa_T0, sa_alpha, sa_T_min, sa_max_iter, seed)
             print(f"SA seed={seed} awal={out['initial_score']} akhir={out['final_score']} "
                   f"iter={out['iterations']} stuck={out['stuck_count']} durasi={out['duration_seconds']:.2f}s")
-        return
-
+        return    
 
     if args.algorithm == "hc":
         run_hc()
